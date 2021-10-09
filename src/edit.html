@@ -1,0 +1,83 @@
+<html lang="en">
+<head>
+    <title>{{if .New}}Create{{else}}Edit{{end}} go/link</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+        body {
+            max-width: 700px;
+            margin: auto;
+            padding: 1em;
+            background-color: #f0f0f0;
+            color: #2a2d2f;
+        }
+        h1, h4 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input {
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
+            font-size: 1em;
+        }
+        label {
+            display: flex;
+            flex: 1;
+            margin-bottom: 1em;
+            align-items: center;
+        }
+        label span {
+            width: 7em;
+            text-align: right;
+        }
+        label input {
+            flex: 1;
+            background-color: #fff;
+            border: none;
+            border-bottom: 1px solid black;
+        }
+        #submit {
+            padding: 1em;
+            background-color: #159e49;
+            border-radius: 2em;
+            color: white;
+            font-weight: bold;
+            border: none;
+            align-self: center;
+            width: 100%;
+            max-width:10em;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{if .New}}Create{{else}}Edit{{end}} go/link</h1>
+    {{if and .New (ne .ShortLink "")}}
+        <h4>This link doesn't exist. Would you like to create it now?</h4>
+    {{end}}
+    <form method="POST">
+        <label>
+            <span>Link:&nbsp;go/</span>
+            <input name="short-link" value="{{.ShortLink}}" placeholder="short go/link" {{if not .New}}disabled=""{{end}}>
+        </label>
+        <label>
+            <span>Destination:&nbsp;</span>
+            <input name="long-link" value="{{.LongLink}}" placeholder="Long destination link">
+        </label>
+        <label>
+            <span>Description:&nbsp;</span>
+            <input name="description" value="{{.Description}}" placeholder="One line description">
+        </label>
+        <label>
+            <span>Owner:&nbsp;</span>
+            <input name="owner" value="{{.Owner}}" placeholder="Who is allowed to change this link?">
+        </label>
+        <input type="hidden" name="create" value="{{.New}}">
+        <input id="submit" type="submit" value="{{if .New}}Create{{else}}Update{{end}}">
+    </form>
+</body>
+</html>
