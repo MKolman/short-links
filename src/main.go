@@ -24,7 +24,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	parsed, _ := links.ParsePath(fmt.Sprintf("%s?%s#%s", r.URL.Path, r.URL.RawQuery, r.URL.Fragment))
 	if parsed.Edit {
 		ServeEditPage(w, parsed.ShortLink)
-	} else if link, err := db.Store.Get(&parsed.ShortLink); err == nil {
+	} else if link, err := db.Store.Get(parsed.ShortLink); err == nil {
 		// This is main functionality. Redirect my dear!
 		url, _ := links.Merge(link.LongLink, parsed.Url)
 		http.Redirect(w, r, url, 301)
@@ -70,7 +70,7 @@ func createOrUpdateLink(r *http.Request) error {
 }
 
 func main() {
-	err := db.LoadDb(dbConnection)
+	err := db.LoadDb(*dbConnection)
 	db.Store.Create(&db.Link{ShortLink: "kolman", LongLink: "https://www.kolman.si"})
 	if err != nil {
 		panic(fmt.Sprintf("unable connect to database: %s", err))
