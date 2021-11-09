@@ -37,7 +37,7 @@ func LoadDb(connectionUri string) error {
 	if builder, ok := builders[con.Scheme]; ok {
 		var err error
 		Store, err = builder(con)
-		return fmt.Errorf("unable to connect to db: %s", err)
+		return err
 	}
 	return fmt.Errorf("no database handler implemented for scheme %q", con.Scheme)
 }
