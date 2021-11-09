@@ -10,6 +10,7 @@ import (
 	"short-links/validation"
 
 	_ "short-links/db/memory"
+	_ "short-links/db/redis"
 )
 
 var (
@@ -70,11 +71,13 @@ func createOrUpdateLink(r *http.Request) error {
 }
 
 func main() {
+	flag.Parse()
+	log.Printf("Loading store from %q.", *dbConnection)
 	err := db.LoadDb(*dbConnection)
-	db.Store.Create(&db.Link{ShortLink: "kolman", LongLink: "https://www.kolman.si"})
 	if err != nil {
-		panic(fmt.Sprintf("unable connect to database: %s", err))
+		log.Panicf("Unable connect to database: %s", err)
 	}
+	db.Store.Create(&db.Link{ShortLink: "kolman", LongLink: "https://www.kolman.si"})
 	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
