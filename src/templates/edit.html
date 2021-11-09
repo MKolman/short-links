@@ -74,7 +74,7 @@
         </label>
         <label>
             <span>Owner:&nbsp;</span>
-            <input name="owner" value="{{.Owner}}" placeholder="Who is allowed to change this link?">
+            <input disabled="1" name="owner" value="Everyone" placeholder="Who is allowed to change this link?">
         </label>
         <input type="hidden" name="create" value="{{.New}}">
         <input id="submit" type="submit" value="{{if .New}}Create{{else}}Update{{end}}">
