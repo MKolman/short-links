@@ -1,11 +1,20 @@
-FROM golang:1.17-alpine
+# Build stage
+FROM golang:1.20-alpine as BuildStage
 
-WORKDIR /usr/local/go/src/short-links
+WORKDIR /app
 
 COPY src/ ./
 
-RUN go mod download
-RUN go build -o /short-links
+RUN go build -o ./short-links ./cmd/server
+
+
+# Deploy stage
+FROM alpine:latest
+
+WORKDIR /
+
+COPY --from=BuildStage /app/ ./
 
 EXPOSE 8081
+
 ENTRYPOINT [ "/short-links" ]

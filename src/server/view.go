@@ -1,10 +1,9 @@
-package main
+package server
 
 import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"short-links/db"
 )
 
 type EditViewModel struct {
@@ -14,14 +13,14 @@ type EditViewModel struct {
 	New         bool
 }
 
-func ServeEditPage(w http.ResponseWriter, shortLink string) {
+func (s *Server) serveEditPage(w http.ResponseWriter, shortLink string) {
 	data := EditViewModel{
 		ShortLink:   shortLink,
 		LongLink:    "",
 		Description: "",
 		New:         true,
 	}
-	if link, err := db.Store.Get(shortLink); err == nil {
+	if link, err := s.store.Get(shortLink); err == nil {
 		data.LongLink = link.LongLink
 		data.Description = link.Description
 		data.New = false

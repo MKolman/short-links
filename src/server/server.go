@@ -1,41 +1,41 @@
-package main
+package server
 
 import (
-	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"short-links/db"
 	"short-links/links"
 	"short-links/validation"
 
-	_ "short-links/db/memory"
-	_ "short-links/db/redis"
+	log "github.com/sirupsen/logrus"
 )
 
-var (
-	dbConnection = flag.String("db-connection", "mem://local", "Connection URI string.")
-	port         = flag.Int("port", 8081, "Port on which to serve.")
-)
+type Server struct {
+	store db.Db
+}
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		createOrUpdateLink(r)
+		if err := s.createOrUpdateLink(r); err != nil {
+			log.Error(err)
+		}
 	}
 	parsed, _ := links.ParsePath(fmt.Sprintf("%s?%s#%s", r.URL.Path, r.URL.RawQuery, r.URL.Fragment))
 	if parsed.Edit {
-		ServeEditPage(w, parsed.ShortLink)
-	} else if link, err := db.Store.Get(parsed.ShortLink); err == nil {
+		s.serveEditPage(w, parsed.ShortLink)
+	} else if link, err := s.store.Get(parsed.ShortLink); err == nil {
 		// This is main functionality. Redirect my dear!
 		url, _ := links.Merge(link.LongLink, parsed.Url)
+		log.Infof("Redirecting %q -> %s", parsed.ShortLink, url)
 		http.Redirect(w, r, url, 301)
 	} else {
 		// If the link doesn't exist yet redirect to edit page
+		log.Warnf("Link %q does not exist. Redirecting to edit page.", parsed.ShortLink)
 		http.Redirect(w, r, "/~"+parsed.ShortLink, 301)
 	}
 }
 
-func createOrUpdateLink(r *http.Request) error {
+func (s *Server) createOrUpdateLink(r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
 		return fmt.Errorf("unable to parse form: %s", err)
 	}
@@ -49,10 +49,11 @@ func createOrUpdateLink(r *http.Request) error {
 		return fmt.Errorf("invalid long link: %s", err)
 	}
 
-	if l, err := db.Store.Get(short); err == nil {
+	if l, err := s.store.Get(short); err == nil {
 		// Update
+		log.Infof("Update link %q", l.ShortLink)
 		l.LongLink = long
-		if err := db.Store.Update(l); err != nil {
+		if err := s.store.Update(l); err != nil {
 			return err
 		}
 	} else {
@@ -62,7 +63,8 @@ func createOrUpdateLink(r *http.Request) error {
 			LongLink:    long,
 			Description: description,
 		}
-		_, err := db.Store.Create(l)
+		log.Infof("Create link %q -> %s", l.ShortLink, l.LongLink)
+		_, err := s.store.Create(l)
 		if err != nil {
 			return err
 		}
@@ -70,14 +72,8 @@ func createOrUpdateLink(r *http.Request) error {
 	return nil
 }
 
-func main() {
-	flag.Parse()
-	log.Printf("Loading store from %q.", *dbConnection)
-	err := db.LoadDb(*dbConnection)
-	if err != nil {
-		log.Panicf("Unable connect to database: %s", err)
-	}
-	db.Store.Create(&db.Link{ShortLink: "kolman", LongLink: "https://www.kolman.si"})
-	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
+func Run(store db.Db, port int) {
+	server := Server{store: store}
+	http.HandleFunc("/", server.handler)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }

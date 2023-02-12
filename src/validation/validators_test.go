@@ -14,13 +14,13 @@ type validateTestCase struct {
 
 func TestValidateShort(t *testing.T) {
 	cases := []validateTestCase{
-		validateTestCase{"t", true},
-		validateTestCase{"basic", true},
-		validateTestCase{"long-link_withmany.chars", true},
-		validateTestCase{"", false},
-		validateTestCase{"~basic", false},
-		validateTestCase{"a/t", false},
-		validateTestCase{"m:a", false},
+		{"t", true},
+		{"basic", true},
+		{"long-link_withmany.chars", true},
+		{"", false},
+		{"~basic", false},
+		{"a/t", false},
+		{"m:a", false},
 	}
 	for _, c := range cases {
 		err := ValidateShort(c.input)
@@ -30,13 +30,13 @@ func TestValidateShort(t *testing.T) {
 
 func TestValidateLong(t *testing.T) {
 	cases := []validateTestCase{
-		validateTestCase{"https://www.kolman.si", true},
-		validateTestCase{"ssh://a", true},
-		validateTestCase{"http://sub.domain.com/help?a=23#15", true},
-		validateTestCase{"", false},
-		validateTestCase{"test", false},
-		validateTestCase{"kolman.si", false},
-		validateTestCase{"_://_", false},
+		{"https://www.kolman.si", true},
+		{"ssh://a", true},
+		{"http://sub.domain.com/help?a=23#15", true},
+		{"", false},
+		{"test", false},
+		{"kolman.si", false},
+		{"_://_", false},
 	}
 	for _, c := range cases {
 		err := ValidateLong(c.input)

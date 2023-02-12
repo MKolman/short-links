@@ -5,8 +5,6 @@ import (
 	"net/url"
 )
 
-var Store Db = &dummyDb{}
-
 var builders map[string]func(*url.URL) (Db, error)
 
 type Link struct {
@@ -29,15 +27,15 @@ func RegisterDbBuilder(scheme string, builder func(*url.URL) (Db, error)) {
 	builders[scheme] = builder
 }
 
-func LoadDb(connectionUri string) error {
+func LoadDb(connectionUri string) (Db, error) {
 	con, err := url.Parse(connectionUri)
 	if err != nil {
-		return fmt.Errorf("unable to parse connection string %q: %s", connectionUri, err)
+		return nil, fmt.Errorf("unable to parse connection string %q: %s", connectionUri, err)
 	}
-	if builder, ok := builders[con.Scheme]; ok {
-		var err error
-		Store, err = builder(con)
-		return err
+	builder, ok := builders[con.Scheme]
+	if !ok {
+		return nil, fmt.Errorf("no database handler implemented for scheme %q", con.Scheme)
 	}
-	return fmt.Errorf("no database handler implemented for scheme %q", con.Scheme)
+	store, err := builder(con)
+	return store, err
 }
