@@ -24,8 +24,10 @@ spec:
     spec:
       containers:
       - name: short-links
-        image: mkolman/short-links:latest
-        # args: ["google.com", "live.com", "facebook.com"]
+        image: mkolman/short-links:v1.0.0
+        args:
+          - -db-connection
+          - redis://redis-redis-ha.redis.svc.cluster.local:6379
         ports:
         - containerPort: 8081
 ---
