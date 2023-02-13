@@ -1,46 +1,65 @@
 <html lang="en">
+
+{{ $title := "Create new go/link" }}
+{{ if ne .ShortLink "" }}
+{{ $title = print "Create go/" .ShortLink }}
+{{ end }}
+
+{{ if not .New }}
+{{ $title = print "Edit go/" .ShortLink}}
+{{ end }}
+
 <head>
-    <title>{{if .New}}Create{{else}}Edit{{end}} go/link</title>
+    <title>{{ $title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         * {
             font-family: sans-serif;
         }
+
         body {
             max-width: 700px;
             margin: auto;
             padding: 1em;
-            background-color: #f0f0f0;
+            background-color: white;
             color: #2a2d2f;
         }
-        h1, h4 {
+
+        h1,
+        h4 {
             text-align: center;
         }
+
         form {
             display: flex;
             flex-direction: column;
         }
+
         input {
             padding-top: 0.5em;
             padding-bottom: 0.5em;
             font-size: 1em;
         }
+
         label {
             display: flex;
             flex: 1;
             margin-bottom: 1em;
             align-items: center;
+            border-bottom: 1px solid black;
         }
+
         label span {
-            width: 7em;
+            width: 2em;
             text-align: right;
         }
+
         label input {
             flex: 1;
             background-color: #fff;
             border: none;
-            border-bottom: 1px solid black;
         }
+
         #submit {
             padding: 1em;
             background-color: #159e49;
@@ -50,34 +69,35 @@
             border: none;
             align-self: center;
             width: 100%;
-            max-width:10em;
+            max-width: 10em;
+        }
+
+        p.error {
+            color: red
         }
     </style>
 </head>
+
 <body>
-    <h1>{{if .New}}Create{{else}}Edit{{end}} go/link</h1>
-    {{if and .New (ne .ShortLink "")}}
-        <h4>This link doesn't exist. Would you like to create it now?</h4>
-    {{end}}
+    <h1>{{ $title }}</h1>
+    {{ if and .New (ne .ShortLink "") }}
+    <h4>This link does not exist. Would you like to create it now?</h4>
+    {{ end }}
     <form method="POST">
-        <label>
-            <span>Link:&nbsp;go/</span>
-            <input name="short-link" value="{{.ShortLink}}" placeholder="short go/link" {{if not .New}}disabled=""{{end}}>
+        <label {{ if not .New }} style="visibility: hidden" {{ end }}>
+            <span>go/</span>
+            <input type="text" name="short-link" value="{{.ShortLink}}" placeholder="short go/link"
+                class="short-link" />
         </label>
         <label>
-            <span>Destination:&nbsp;</span>
-            <input name="long-link" value="{{.LongLink}}" placeholder="Long destination link">
-        </label>
-        <label>
-            <span>Description:&nbsp;</span>
-            <input name="description" value="{{.Description}}" placeholder="One line description">
-        </label>
-        <label>
-            <span>Owner:&nbsp;</span>
-            <input disabled="1" name="owner" value="Everyone" placeholder="Who is allowed to change this link?">
+            <input type="text" name="long-link" value="{{.LongLink}}" placeholder="long destination link">
         </label>
         <input type="hidden" name="create" value="{{.New}}">
+        {{ if ne .Error nil }}
+        <p class="error">{{ .Error }}</p>
+        {{ end }}
         <input id="submit" type="submit" value="{{if .New}}Create{{else}}Update{{end}}">
     </form>
 </body>
+
 </html>

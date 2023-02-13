@@ -25,6 +25,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable connect to database: %s", err)
 	}
-	store.Create(&db.Link{ShortLink: "kolman", LongLink: "https://www.kolman.si"})
+	store.Create(&db.Link{ShortLink: "favicon.ico", LongLink: "https://www.golinks.io/favicon.ico"})
 	server.Run(store, *port)
 }

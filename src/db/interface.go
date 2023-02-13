@@ -8,10 +8,9 @@ import (
 var builders map[string]func(*url.URL) (Db, error)
 
 type Link struct {
-	Id          interface{}
-	ShortLink   string
-	LongLink    string
-	Description string
+	Id        interface{}
+	ShortLink string
+	LongLink  string
 }
 
 type Db interface {
@@ -30,7 +29,7 @@ func RegisterDbBuilder(scheme string, builder func(*url.URL) (Db, error)) {
 func LoadDb(connectionUri string) (Db, error) {
 	con, err := url.Parse(connectionUri)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse connection string %q: %s", connectionUri, err)
+		return nil, fmt.Errorf("unable to parse connection string %q: %w", connectionUri, err)
 	}
 	builder, ok := builders[con.Scheme]
 	if !ok {

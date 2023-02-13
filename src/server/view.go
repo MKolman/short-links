@@ -7,25 +7,27 @@ import (
 )
 
 type EditViewModel struct {
-	ShortLink   string
-	LongLink    string
-	Description string
-	New         bool
+	ShortLink string
+	LongLink  string
+	New       bool
+	Error     error
 }
 
-func (s *Server) serveEditPage(w http.ResponseWriter, shortLink string) {
+func (s *Server) serveEditPage(w http.ResponseWriter, shortLink string, err error) {
 	data := EditViewModel{
-		ShortLink:   shortLink,
-		LongLink:    "",
-		Description: "",
-		New:         true,
+		ShortLink: shortLink,
+		LongLink:  "",
+		New:       true,
+		Error:     err,
 	}
 	if link, err := s.store.Get(shortLink); err == nil {
 		data.LongLink = link.LongLink
-		data.Description = link.Description
 		data.New = false
 	}
+	s.renderEditPage(w, &data)
+}
 
+func (s *Server) renderEditPage(w http.ResponseWriter, data *EditViewModel) {
 	t, err := template.ParseFiles("templates/edit.html")
 	if err != nil {
 		fmt.Fprintf(w, "An error occured while parsing the template: %s", err)

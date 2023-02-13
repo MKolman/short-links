@@ -16,16 +16,23 @@ type Server struct {
 
 func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		if err := s.createOrUpdateLink(r); err != nil {
-			log.Error(err)
-		}
+		s.postHandler(w, r)
+		return
 	}
-	parsed, _ := links.ParsePath(fmt.Sprintf("%s?%s#%s", r.URL.Path, r.URL.RawQuery, r.URL.Fragment))
+	var renderErr error
+	parsed, err := links.ParsePath(fmt.Sprintf("%s?%s#%s", r.URL.Path, r.URL.RawQuery, r.URL.Fragment))
+	if err != nil {
+		renderErr := fmt.Errorf("unable to parse path: %w", err)
+		log.Errorf(renderErr.Error())
+	}
 	if parsed.Edit {
-		s.serveEditPage(w, parsed.ShortLink)
+		s.serveEditPage(w, parsed.ShortLink, renderErr)
 	} else if link, err := s.store.Get(parsed.ShortLink); err == nil {
 		// This is main functionality. Redirect my dear!
-		url, _ := links.Merge(link.LongLink, parsed.Url)
+		url, err := links.Merge(link.LongLink, parsed.Url)
+		if err != nil {
+			url = link.LongLink
+		}
 		log.Infof("Redirecting %q -> %s", parsed.ShortLink, url)
 		http.Redirect(w, r, url, http.StatusFound)
 	} else {
@@ -35,41 +42,57 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) createOrUpdateLink(r *http.Request) error {
+func (s *Server) postHandler(w http.ResponseWriter, r *http.Request) {
+	data := EditViewModel{
+		ShortLink: "",
+		LongLink:  "",
+		New:       true,
+		Error:     nil,
+	}
 	if err := r.ParseForm(); err != nil {
-		return fmt.Errorf("unable to parse form: %s", err)
+		data.Error = fmt.Errorf("unable to parse form: %w", err)
+		s.renderEditPage(w, &data)
+		return
 	}
-	short := r.FormValue("short-link")
-	long := r.FormValue("long-link")
-	description := r.FormValue("description")
-	if err := validation.ValidateShort(short); err != nil {
-		return fmt.Errorf("invalid short link: %s", err)
+	data.ShortLink = r.FormValue("short-link")
+	data.LongLink = r.FormValue("long-link")
+	if err := validation.ValidateShort(data.ShortLink); err != nil {
+		data.Error = fmt.Errorf("invalid short link: %w", err)
+		s.renderEditPage(w, &data)
+		return
 	}
-	if err := validation.ValidateLong(long); err != nil {
-		return fmt.Errorf("invalid long link: %s", err)
+	if err := validation.ValidateLong(data.LongLink); err != nil {
+		data.Error = fmt.Errorf("invalid long link: %w", err)
+		s.renderEditPage(w, &data)
+		return
 	}
 
-	if l, err := s.store.Get(short); err == nil {
+	if l, err := s.store.Get(data.LongLink); err == nil {
 		// Update
 		log.Infof("Update link %q", l.ShortLink)
-		l.LongLink = long
+		l.LongLink = data.LongLink
 		if err := s.store.Update(l); err != nil {
-			return err
+			data.Error = err
+			s.renderEditPage(w, &data)
+			return
 		}
+		data.New = false
 	} else {
 		// Create
 		l := &db.Link{
-			ShortLink:   short,
-			LongLink:    long,
-			Description: description,
+			ShortLink: data.ShortLink,
+			LongLink:  data.LongLink,
 		}
 		log.Infof("Create link %q -> %s", l.ShortLink, l.LongLink)
 		_, err := s.store.Create(l)
 		if err != nil {
-			return err
+			data.Error = err
+			s.renderEditPage(w, &data)
+			return
 		}
+		data.New = false
 	}
-	return nil
+	s.renderEditPage(w, &data)
 }
 
 func Run(store db.Db, port int) {
