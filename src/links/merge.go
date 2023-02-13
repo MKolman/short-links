@@ -10,7 +10,7 @@ import (
 func Merge(longLink string, extraUrl *url.URL) (string, error) {
 	r, err := url.Parse(longLink)
 	if err != nil {
-		return "", fmt.Errorf("error parsing longLink: %s", err)
+		return "", fmt.Errorf("error parsing longLink: %w", err)
 	}
 	r.Path = path.Join(r.Path, extraUrl.Path)
 	q := r.Query()

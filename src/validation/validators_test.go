@@ -40,6 +40,6 @@ func TestValidateLong(t *testing.T) {
 	}
 	for _, c := range cases {
 		err := ValidateLong(c.input)
-		assert.Equal(t, c.valid, err == nil, fmt.Errorf("%s: %t %s", c.input, c.valid, err))
+		assert.Equal(t, c.valid, err == nil, fmt.Errorf("%s: %t %w", c.input, c.valid, err))
 	}
 }

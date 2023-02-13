@@ -9,7 +9,7 @@ import (
 const EditChar = "~"
 
 // A way to store: /~first-part-of-link/and/the-rest?of=url#here
-//              Edit^(--  ShortLink --) (--------- Url --------)
+// .            Edit^(--  ShortLink --) (--------- Url --------)
 type Request struct {
 	// Is this a request to edit this link?
 	// I.e. did the request start with ~
@@ -27,7 +27,7 @@ type Request struct {
 func ParsePath(path string) (Request, error) {
 	u, err := url.Parse(strings.TrimPrefix(path, "/"))
 	if err != nil {
-		return Request{}, fmt.Errorf("invalid request path: %s", err)
+		return Request{}, fmt.Errorf("invalid request path: %w", err)
 	}
 	link := ""
 	if strings.Contains(u.Path, "/") {

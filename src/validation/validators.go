@@ -24,7 +24,7 @@ func ValidateShort(link string) error {
 func ValidateLong(link string) error {
 	u, err := url.Parse(link)
 	if err != nil {
-		return fmt.Errorf("url %q cannot be parsed: %s", link, err)
+		return fmt.Errorf("url %q cannot be parsed: %w", link, err)
 	}
 	if u.Scheme == "" {
 		return fmt.Errorf("url scheme not defined in %q", link)

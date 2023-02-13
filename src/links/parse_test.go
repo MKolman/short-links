@@ -14,7 +14,7 @@ type ParseTestCase struct {
 
 func TestParsePath(t *testing.T) {
 	data := []ParseTestCase{
-		ParseTestCase{
+		{
 			inp: "/testme/",
 			want: &Request{
 				Edit:      false,
@@ -22,7 +22,7 @@ func TestParsePath(t *testing.T) {
 				Url:       &url.URL{},
 			},
 		},
-		ParseTestCase{
+		{
 			inp: "/~testme/",
 			want: &Request{
 				Edit:      true,
@@ -30,7 +30,7 @@ func TestParsePath(t *testing.T) {
 				Url:       &url.URL{},
 			},
 		},
-		ParseTestCase{
+		{
 			inp: "/testme/test2",
 			want: &Request{
 				Edit:      false,
@@ -38,7 +38,7 @@ func TestParsePath(t *testing.T) {
 				Url:       &url.URL{Path: "test2"},
 			},
 		},
-		ParseTestCase{
+		{
 			inp: "/~test-me_/test2?q=t&b=x#hashme",
 			want: &Request{
 				Edit:      true,

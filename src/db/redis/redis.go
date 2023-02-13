@@ -20,11 +20,11 @@ func (m *RedisDb) Get(shortLink string) (*db.Link, error) {
 	defer cancel()
 	v, err := m.store.Get(ctx, buildKey(shortLink)).Result()
 	if err != nil {
-		return nil, fmt.Errorf("short link does not exist: %s", err)
+		return nil, fmt.Errorf("short link does not exist: %w", err)
 	}
 	l := &db.Link{}
 	if err := json.Unmarshal([]byte(v), l); err != nil {
-		return nil, fmt.Errorf("unable to unmarshal value from redis: %s", err)
+		return nil, fmt.Errorf("unable to unmarshal value from redis: %w", err)
 	}
 	return l, nil
 }
@@ -33,7 +33,7 @@ func (m *RedisDb) Create(l *db.Link) (*db.Link, error) {
 	l.Id = buildKey(l.ShortLink)
 	v, err := json.Marshal(l)
 	if err != nil {
-		return l, fmt.Errorf("unable to serialize link object: %s", err)
+		return l, fmt.Errorf("unable to serialize link object: %w", err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -55,7 +55,7 @@ func (m *RedisDb) Update(l *db.Link) error {
 func NewRedisDb(u *url.URL) (db.Db, error) {
 	opt, err := redis.ParseURL(u.String())
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse redis url %q: %s", u.String(), err)
+		return nil, fmt.Errorf("unable to parse redis url %q: %w", u.String(), err)
 	}
 	return &RedisDb{
 		store: redis.NewClient(opt),

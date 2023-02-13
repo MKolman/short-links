@@ -15,22 +15,22 @@ type MergeTestCase struct {
 
 func TestMerge(t *testing.T) {
 	cases := []MergeTestCase{
-		MergeTestCase{
+		{
 			link: "http://kolman.si",
 			url:  url.URL{},
 			want: "http://kolman.si",
 		},
-		MergeTestCase{
+		{
 			link: "https://www.kolman.si/test?j=3#hash",
 			url:  url.URL{},
 			want: "https://www.kolman.si/test?j=3#hash",
 		},
-		MergeTestCase{
+		{
 			link: "http://kolman.si",
 			url:  url.URL{Path: "test", RawQuery: "what=1"},
 			want: "http://kolman.si/test?what=1",
 		},
-		MergeTestCase{
+		{
 			link: "http://kolman.si/asdf?what=0#removeme",
 			url:  url.URL{Path: "test", RawQuery: "what=1", Fragment: "newhash"},
 			want: "http://kolman.si/asdf/test?what=0&what=1#newhash",
