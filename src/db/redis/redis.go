@@ -16,7 +16,8 @@ type RedisDb struct {
 }
 
 func (m *RedisDb) Get(shortLink string) (*db.Link, error) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	v, err := m.store.Get(ctx, buildKey(shortLink)).Result()
 	if err != nil {
 		return nil, fmt.Errorf("short link does not exist: %s", err)
@@ -34,7 +35,8 @@ func (m *RedisDb) Create(l *db.Link) (*db.Link, error) {
 	if err != nil {
 		return l, fmt.Errorf("unable to serialize link object: %s", err)
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	err = m.store.Set(ctx, l.Id.(string), v, 0).Err()
 	return l, err
 }

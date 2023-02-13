@@ -27,11 +27,11 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 		// This is main functionality. Redirect my dear!
 		url, _ := links.Merge(link.LongLink, parsed.Url)
 		log.Infof("Redirecting %q -> %s", parsed.ShortLink, url)
-		http.Redirect(w, r, url, 301)
+		http.Redirect(w, r, url, http.StatusFound)
 	} else {
 		// If the link doesn't exist yet redirect to edit page
 		log.Warnf("Link %q does not exist. Redirecting to edit page.", parsed.ShortLink)
-		http.Redirect(w, r, "/~"+parsed.ShortLink, 301)
+		http.Redirect(w, r, "/~"+parsed.ShortLink, http.StatusFound)
 	}
 }
 
