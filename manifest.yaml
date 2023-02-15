@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: short-links
-        image: mkolman/short-links:v1.0.0
+        image: mkolman/short-links:v1.0.1
         args:
           - -db-connection
           - redis://redis-redis-ha.redis.svc.cluster.local:6379
